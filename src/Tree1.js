@@ -9,16 +9,7 @@ class CustomTree extends Component {
     this.state = {
       data: {
         name: "Parent",
-        children: [
-          {
-            name: "Child One",
-            children: [{ name: "Ahmed" }, { name: "Kevin" }, { name: "Ryan" }]
-          },
-          {
-            name: "Child Two",
-            children: []
-          }
-        ]
+        children: []
       },
       showForm: false,
       selectedNode: {
@@ -38,6 +29,7 @@ class CustomTree extends Component {
     //alert(`Right clicked ${nodeKey}`);
     console.log("heres the nodekey", nodeKey);
 
+    this.clearForm();
     this.setState({
       selectedNode: {
         name: nodeKey,
@@ -45,6 +37,8 @@ class CustomTree extends Component {
       },
       showForm: true
     });
+
+    console.log(this.state.selectedNode);
   };
 
   clearForm = () => {
@@ -97,7 +91,7 @@ class CustomTree extends Component {
   };
 
   onSave = (parent, children) => {
-    this.clearForm();
+    //this.clearForm();
     this.replaceChildren(parent, children);
   };
 
@@ -107,7 +101,7 @@ class CustomTree extends Component {
         {this.state.showForm ? (
           <NodeForm
             onSave={(parent, children) => this.onSave(parent, children)}
-            onCancel={this.clearForm}
+            //onCancel={this.clearForm}
             selectedNode={this.state.selectedNode}
           />
         ) : null}
@@ -125,7 +119,7 @@ class CustomTree extends Component {
             transform: this.props.landscape ? "rotate(0)" : "rotate(90)"
           }}
           animation
-          duration={400}
+          duration={200}
         />
       </>
     );

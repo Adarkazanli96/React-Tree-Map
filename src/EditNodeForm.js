@@ -15,19 +15,27 @@ class EditNodeForm extends React.Component {
       return { ...child, name: evt.target.value };
     });
 
-    this.setState({ children: newChildren });
+    this.setState({ children: newChildren }, () =>
+      this.props.onSave(this.state.name, this.state.children)
+    );
   };
 
   handleAddChild = () => {
-    this.setState({
-      children: this.state.children.concat([{ name: "", children: [] }])
-    });
+    this.setState(
+      {
+        children: this.state.children.concat([{ name: "", children: [] }])
+      },
+      () => this.props.onSave(this.state.name, this.state.children)
+    );
   };
 
   handleRemoveChild = idx => () => {
-    this.setState({
-      children: this.state.children.filter((s, sidx) => idx !== sidx)
-    });
+    this.setState(
+      {
+        children: this.state.children.filter((s, sidx) => idx !== sidx)
+      },
+      () => this.props.onSave(this.state.name, this.state.children)
+    );
   };
 
   emptyFieldExists = () => {
@@ -41,6 +49,16 @@ class EditNodeForm extends React.Component {
       name: this.props.selectedNode.name,
       children: this.props.selectedNode.children
     });
+  }
+
+
+  static getDerivedStateFromProps(props, state) {
+    console.log("calling getderived state from props");
+    if (props.selectedNode.name === state.name) return null;
+    return {
+      name: props.selectedNode.name,
+      children: props.selectedNode.children
+    };
   }
 
   render() {
@@ -76,14 +94,14 @@ class EditNodeForm extends React.Component {
           >
             +
           </button>
-          <button
+          {/*<button
             onClick={() =>
               this.props.onSave(this.state.name, this.state.children)
             }
           >
             Save
           </button>
-          <button onClick={this.props.onCancel}>Cancel</button>
+          <button onClick={this.props.onCancel}>Cancel</button>*/}
         </div>
       </div>
     );

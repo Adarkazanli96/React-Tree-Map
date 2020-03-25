@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Tree from "react-tree-graph";
 import "./Tree1.css";
-import NodeForm from "./EditNodeForm";
+import NodeForm from "./Form";
 
 class CustomTree extends Component {
   constructor(props) {
@@ -15,7 +15,9 @@ class CustomTree extends Component {
       selectedNode: {
         name: "",
         children: []
-      }
+      },
+      x: 0,
+      y: 0
     };
   }
 
@@ -24,24 +26,26 @@ class CustomTree extends Component {
     alert(`Left clicked ${nodeKey}`);
   };*/
 
-  onRightClick = (event, nodeKey) => {
+  onClick = (event, nodeKey) => {
     event.preventDefault();
     //alert(`Right clicked ${nodeKey}`);
     console.log("heres the nodekey", nodeKey);
 
-    this.clearForm();
+    //this.closeForm();
     this.setState({
       selectedNode: {
         name: nodeKey,
         children: this.getChildren(nodeKey)
       },
-      showForm: true
+      showForm: true,
+      x: event.clientX,
+      y: event.clientY
     });
 
     console.log(this.state.selectedNode);
   };
 
-  clearForm = () => {
+  closeForm = () => {
     let selectedNode = {
       name: "",
       children: []
@@ -68,42 +72,56 @@ class CustomTree extends Component {
     return children;
   };
 
-  replaceChildren = (parent, children) => {
+  appendChild = (node, child) => {
     let treeData = JSON.parse(JSON.stringify(this.state.data));
 
     let found = false;
-    var replaceChildrenHelper = (curr, target, children) => {
+    var appendChildHelper = (curr, target) => {
       if (curr.name !== target) {
         if (!curr.children) return;
         for (let i = 0; i < curr.children.length; i++) {
-          replaceChildrenHelper(curr.children[i], target, children);
+          appendChildHelper(curr.children[i], target);
           if (found) return;
         }
       } else {
         found = true;
-        curr.children = children;
+        curr.children.push(child);
       }
     };
 
-    replaceChildrenHelper(treeData, parent, children);
+    appendChildHelper(treeData, node);
 
     this.setState({ data: treeData });
   };
 
-  onSave = (parent, children) => {
-    //this.clearForm();
-    this.replaceChildren(parent, children);
+  onSave = (node, child) => {
+
+    this.closeForm();
+    //return if name and child haven't changed
+    //if(node ) only edit name if it's different
+    if (child.name !== "") this.appendChild(node, child); //only append child if it has a name
+
+    
   };
 
   render() {
     return (
       <>
         {this.state.showForm ? (
-          <NodeForm
-            onSave={(parent, children) => this.onSave(parent, children)}
-            //onCancel={this.clearForm}
-            selectedNode={this.state.selectedNode}
-          />
+          <div
+            style={{
+              position: "absolute",
+              left: this.state.x + 10,
+              top: this.state.y + 10,
+              zIndex: 1000
+            }}
+          >
+            <NodeForm
+              onSave={(parent, child) => this.onSave(parent, child)}
+              onClose={() => this.closeForm()}
+              selectedNode={this.state.selectedNode}
+            />
+          </div>
         ) : null}
 
         <Tree
@@ -111,8 +129,7 @@ class CustomTree extends Component {
           height={400}
           width={400}
           gProps={{
-            onClick: this.onClick,
-            onContextMenu: this.onRightClick
+            onClick: this.onClick
           }}
           svgProps={{
             className: "custom",

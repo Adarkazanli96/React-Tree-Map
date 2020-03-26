@@ -17,17 +17,42 @@ class EditNodeForm extends React.Component {
     this.setState({ child: { ...this.state.child, name: evt.target.value } });
   };
 
+  handleNameChange = evt => {
+    this.setState({ newName: evt.target.value });
+  };
+
   componentDidMount() {
     this.setState({
-      name: this.props.selectedNode.name
+      name: this.props.selectedNode.name,
+      newName: this.props.selectedNode.name
     });
   }
 
-  static getDerivedStateFromProps(props, state) {
+  /*static getDerivedStateFromProps(props, state) {
     if (props.selectedNode.name === state.name) return null;
     return {
-      name: props.selectedNode.name
+      name: this.props.selectedNode.name,
+      newName: this.props.selectedNode.name
     };
+  }*/
+
+  handleClick = e => {
+    if (this.node.contains(e.target)) {
+      console.log("clicked inside");
+      //inside
+      return;
+    }
+
+    // handle click outside
+    this.props.onClose();
+  };
+
+  componentWillMount() {
+    document.addEventListener("mousedown", this.handleClick, false);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("mousedown", this.handleClick, false);
   }
 
   render() {
@@ -35,15 +60,34 @@ class EditNodeForm extends React.Component {
       <form
         onSubmit={event => {
           event.preventDefault();
-          this.props.onSave(this.state.name, this.state.child);
+          if (this.state.newName === "")
+            alert("name cannot have an empty field");
+          console.log("submitting");
+          this.props.onSave(
+            this.state.name,
+            this.state.newName,
+            this.state.child
+          );
         }}
+        ref={node => (this.node = node)}
       >
+        <input
+          type="text"
+          value={this.state.newName}
+          placeholder="Edit Name"
+          onChange={this.handleNameChange}
+          style={{ display: "block" }}
+        />
         <input
           type="text"
           value={this.state.child.name}
           placeholder="New Child"
           onChange={this.handleChildNameChange}
+          style={{ display: "block" }}
         />
+        <button type="submit" style={{ display: "none" }}>
+          Submit
+        </button>
         <button type="button" onClick={this.props.onClose}>
           Cancel
         </button>

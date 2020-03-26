@@ -21,12 +21,7 @@ class CustomTree extends Component {
     };
   }
 
-  /*onClick = (event, nodeKey) => {
-    console.log(event, nodeKey);
-    alert(`Left clicked ${nodeKey}`);
-  };*/
-
-  onClick = (event, nodeKey) => {
+  onNodeClick = (event, nodeKey) => {
     event.preventDefault();
     //alert(`Right clicked ${nodeKey}`);
     console.log("heres the nodekey", nodeKey);
@@ -72,7 +67,7 @@ class CustomTree extends Component {
     return children;
   };
 
-  appendChild = (node, child) => {
+  appendChild = (name, newName, child) => {
     let treeData = JSON.parse(JSON.stringify(this.state.data));
 
     let found = false;
@@ -85,23 +80,25 @@ class CustomTree extends Component {
         }
       } else {
         found = true;
-        curr.children.push(child);
+        if (curr.name !== newName) curr.name = newName;
+        if (child.name !== "") curr.children.push(child);
       }
     };
 
-    appendChildHelper(treeData, node);
+    appendChildHelper(treeData, name);
 
     this.setState({ data: treeData });
   };
 
-  onSave = (node, child) => {
-
+  onSave = (name, newName, child) => {
     this.closeForm();
     //return if name and child haven't changed
     //if(node ) only edit name if it's different
-    if (child.name !== "") this.appendChild(node, child); //only append child if it has a name
 
-    
+    // only change if one or the other is true
+    console.log("boutta save");
+    if (name !== newName || child.name !== "")
+      this.appendChild(name, newName, child); //only append child if it has a name
   };
 
   render() {
@@ -117,7 +114,9 @@ class CustomTree extends Component {
             }}
           >
             <NodeForm
-              onSave={(parent, child) => this.onSave(parent, child)}
+              onSave={(name, newName, child) =>
+                this.onSave(name, newName, child)
+              }
               onClose={() => this.closeForm()}
               selectedNode={this.state.selectedNode}
             />
@@ -127,9 +126,9 @@ class CustomTree extends Component {
         <Tree
           data={this.state.data}
           height={400}
-          width={400}
+          width={700}
           gProps={{
-            onClick: this.onClick
+            onClick: this.onNodeClick
           }}
           svgProps={{
             className: "custom",

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Tree from "react-tree-graph";
 import "./Tree1.css";
-import NodeForm from "./Form";
+import Form from "./Form";
 
 class CustomTree extends Component {
   constructor(props) {
@@ -12,59 +12,24 @@ class CustomTree extends Component {
         children: []
       },
       showForm: false,
-      selectedNode: {
-        name: "",
-        children: []
-      },
-      x: 0,
-      y: 0
+      selectedNode: "",
+      xPos: 0,
+      yPos: 0
     };
   }
 
   onNodeClick = (event, nodeKey) => {
     event.preventDefault();
-    //alert(`Right clicked ${nodeKey}`);
-    console.log("heres the nodekey", nodeKey);
-
-    //this.closeForm();
     this.setState({
-      selectedNode: {
-        name: nodeKey,
-        children: this.getChildren(nodeKey)
-      },
+      selectedNode: nodeKey,
       showForm: true,
-      x: event.clientX,
-      y: event.clientY
+      xPos: event.clientX,
+      yPos: event.clientY
     });
-
-    console.log(this.state.selectedNode);
   };
 
   closeForm = () => {
-    let selectedNode = {
-      name: "",
-      children: []
-    };
-    this.setState({ showForm: false, selectedNode });
-  };
-
-  /* dfs to get children */
-  getChildren = target => {
-    let children = [];
-
-    var getChildrenHelper = (curr, target) => {
-      if (curr.name !== target) {
-        if (!curr.children) return;
-        for (let i = 0; i < curr.children.length; i++) {
-          getChildrenHelper(curr.children[i], target);
-          if (children.length) return;
-        }
-      } else children = curr.children;
-    };
-
-    getChildrenHelper(this.state.data, target);
-
-    return children;
+    this.setState({ showForm: false, selectedNode: "" });
   };
 
   appendChild = (name, newName, child) => {
@@ -92,28 +57,33 @@ class CustomTree extends Component {
 
   onSave = (name, newName, child) => {
     this.closeForm();
-    //return if name and child haven't changed
-    //if(node ) only edit name if it's different
-
-    // only change if one or the other is true
-    console.log("boutta save");
     if (name !== newName || child.name !== "")
-      this.appendChild(name, newName, child); //only append child if it has a name
+      //only call function if name of node changed or added a child
+      this.appendChild(name, newName, child);
   };
 
   render() {
     return (
-      <>
+      <div
+        style={
+          this.props.landscape
+            ? {}
+            : {
+                position: "relative",
+                top: "300px"
+              }
+        }
+      >
         {this.state.showForm ? (
           <div
             style={{
               position: "absolute",
-              left: this.state.x + 10,
-              top: this.state.y + 10,
+              left: this.state.xPos + 10,
+              top: this.state.yPos + 10,
               zIndex: 1000
             }}
           >
-            <NodeForm
+            <Form
               onSave={(name, newName, child) =>
                 this.onSave(name, newName, child)
               }
@@ -125,8 +95,8 @@ class CustomTree extends Component {
 
         <Tree
           data={this.state.data}
-          height={400}
-          width={700}
+          height={500}
+          width={1000}
           gProps={{
             onClick: this.onNodeClick
           }}
@@ -137,7 +107,7 @@ class CustomTree extends Component {
           animation
           duration={200}
         />
-      </>
+      </div>
     );
   }
 }

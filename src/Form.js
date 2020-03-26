@@ -23,28 +23,15 @@ class EditNodeForm extends React.Component {
 
   componentDidMount() {
     this.setState({
-      name: this.props.selectedNode.name,
-      newName: this.props.selectedNode.name
+      name: this.props.selectedNode,
+      newName: this.props.selectedNode
     });
   }
 
-  /*static getDerivedStateFromProps(props, state) {
-    if (props.selectedNode.name === state.name) return null;
-    return {
-      name: this.props.selectedNode.name,
-      newName: this.props.selectedNode.name
-    };
-  }*/
-
   handleClick = e => {
-    if (this.node.contains(e.target)) {
-      console.log("clicked inside");
-      //inside
-      return;
+    if (!this.node.contains(e.target)) {
+      this.props.onClose();
     }
-
-    // handle click outside
-    this.props.onClose();
   };
 
   componentWillMount() {

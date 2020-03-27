@@ -1,75 +1,125 @@
 import React, { Component } from "react";
 import Tree from "react-d3-tree";
-import Popup from "./Popup";
+import Form from "./Form";
 
 class CustomTree extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        uuid = '2',
-        myTreeData: [{
-          name: "Top Level",
-          children: [
-            {
-              name: "Level 2: A",
-              attributes: {
-                keyA: "val A",
-                keyB: "val B",
-                keyC: "val C"
-              }
-            },
-            {
-              name: "Level 2: B"
-            }
-          ],
-          keyProp: ""
-        }
-      ],
-      showPopup: false
+      data: {
+        name: "Parent",
+        id: "1",
+        key: "1",
+        children: []
+      },
+      showForm: false,
+      showButton: false,
+      selectedNode: "",
+      xPos: 0,
+      yPos: 0
     };
   }
 
-  togglePopup() {
+  onNodeClick = (nodeKey, event) => {
+    event.preventDefault();
+    console.log(nodeKey, event);
     this.setState({
-      showPopup: !this.state.showPopup
+      selectedNode: nodeKey.name,
+      showForm: true,
+      xPos: event.clientX,
+      yPos: event.clientY
     });
-  }
-
-  onClick = (nodeData, event) => {
-    console.log(nodeData, event);
-    this.generateNode(nodeData);
   };
 
-  // can get x and y coordinate
-  onMouseOver = (nodeData, event) => {
-    console.log(nodeData, event);
+  closeForm = () => {
+    this.setState({ showForm: false, selectedNode: "" });
+  };
+
+  appendChild = (name, newName, child) => {
+    let treeData = JSON.parse(JSON.stringify(this.state.data));
+
+    let found = false;
+    var appendChildHelper = (curr, target) => {
+      if (curr.name !== target) {
+        if (!curr.children) return;
+        for (let i = 0; i < curr.children.length; i++) {
+          appendChildHelper(curr.children[i], target);
+          if (found) return;
+        }
+      } else {
+        found = true;
+        if (curr.name !== newName) curr.name = newName;
+        if (child.name !== "") curr.children.push(child);
+      }
+    };
+
+    appendChildHelper(treeData, name);
+
+    this.setState({ data: treeData });
+  };
+
+  onSave = (name, newName, child) => {
+    this.closeForm();
+    if (name !== newName || child.name !== "")
+      //only call function if name of node changed or added a child
+      this.appendChild(name, newName, child);
   };
 
   render() {
     return (
-      <div id="treeWrapper" style={{ width: "100em", height: "100em" }}>
-        {/*<div>
-          <h1> Simple Popup Example In React Application </h1>
-          <button onClick={this.togglePopup.bind(this)}>
-            {" "}
-            Click To Launch Popup
-          </button>
-
-          {this.state.showPopup ? (
-            <Popup
-              text='Click "Close Button" to hide popup'
-              closePopup={this.togglePopup.bind(this)}
-            />
+      <>
+        <div>
+          {" "}
+          {this.state.showForm ? (
+            <div
+              style={{
+                position: "absolute",
+                left: this.state.xPos + 10,
+                top: this.state.yPos + 10,
+                zIndex: 1000
+              }}
+            >
+              <Form
+                onSave={(name, newName, child) =>
+                  this.onSave(name, newName, child)
+                }
+                onClose={() => this.closeForm()}
+                selectedNode={this.state.selectedNode}
+              />
+            </div>
           ) : null}
-          </div>*/}
-        <Tree
-          onMouseOver={this.onMouseOver}
-          data={this.state.myTreeData}
-          onClick={this.onClick}
-          zoomable={false}
-          translate={{ x: 50, y: 250 }}
-        />
-      </div>
+        </div>
+        <div id="treeWrapper" style={{ width: "100em", height: "100em" }}>
+          {/*{this.state.showButton ? (
+          <div
+            style={{
+              position: "absolute",
+              left: this.state.xPos + 10,
+              top: this.state.yPos + 10,
+              zIndex: 1000
+            }}
+          >
+            <button>+</button>
+          </div>
+          ) : null}*/}
+          <Tree
+            onMouseOver={this.onMouseOver}
+            data={this.state.data}
+            onClick={this.onNodeClick}
+            zoomable={false}
+            translate={{ x: 50, y: 250 }}
+            collapsible={true}
+            transitionDuration={0}
+            /*onMouseOver={(nodeKey, event) =>
+            this.setState({ showButton: true, xPos: event.clientX })
+          }
+          onMouseOut={(nodeKey, event) =>
+            this.setState({ showButton: false, yPos: event.clientY })
+          }*/
+            orientation={this.props.landscape ? "horizontal" : "vertical"}
+          />
+        </div>
+      </>
     );
   }
 }

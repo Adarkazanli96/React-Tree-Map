@@ -11,6 +11,9 @@
 # production
 /build
 
+# sensitive information
+/src/config.js
+
 # misc
 .DS_Store
 .env.local

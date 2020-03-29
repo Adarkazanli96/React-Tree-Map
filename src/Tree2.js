@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Tree from "react-d3-tree";
 import Form from "./Form";
+import { loginRoute, groupRoute, CREDENTIALS } from "./config.js";
+import axios from "axios";
 
 class CustomTree extends Component {
   constructor(props) {
@@ -18,6 +20,44 @@ class CustomTree extends Component {
       xPos: 0,
       yPos: 0
     };
+  }
+
+  componentDidMount() {
+    getGroups();
+
+    async function getGroups() {
+      let sessionKey;
+      let response;
+
+      //get authentication key
+      await axios({
+        method: "post",
+        url: loginRoute,
+        data: {
+          email: CREDENTIALS.email,
+          password: CREDENTIALS.password
+        },
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(res => {
+        sessionKey = res.data.sessionId;
+      });
+
+      //make request
+      await axios({
+        method: "get",
+        url: groupRoute,
+        headers: {
+          Authorization: `bearer_admin ${sessionKey}`,
+          "Content-Type": "application/json"
+        }
+      }).then(res => {
+        //console.log(res.data);
+        response = res;
+        console.log(response.data);
+      });
+    }
   }
 
   onNodeClick = (nodeKey, event) => {

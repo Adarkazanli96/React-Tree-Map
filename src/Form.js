@@ -22,9 +22,10 @@ class EditNodeForm extends React.Component {
   };
 
   componentDidMount() {
+    const { selectedNode } = this.props;
     this.setState({
-      name: this.props.selectedNode,
-      newName: this.props.selectedNode
+      name: selectedNode,
+      newName: selectedNode
     });
   }
 
@@ -43,32 +44,27 @@ class EditNodeForm extends React.Component {
   }
 
   render() {
+    const { name, newName, child } = this.state;
     return (
       <form
         onSubmit={event => {
           event.preventDefault();
-          if (this.state.newName === "")
-            alert("name cannot have an empty field");
-          console.log("submitting");
-          this.props.onSave(
-            this.state.name,
-            this.state.newName,
-            this.state.child
-          );
+          if (newName === "") alert("Name cannot have an empty field");
+          this.props.onSave(name, newName, child);
         }}
         ref={node => (this.node = node)}
       >
         <input
           type="text"
-          value={this.state.newName}
-          placeholder="Edit Name"
+          value={newName}
+          placeholder="Name"
           onChange={this.handleNameChange}
           style={{ display: "block" }}
         />
         <input
           type="text"
-          value={this.state.child.name}
-          placeholder="New Child"
+          value={child.name}
+          placeholder="Child"
           onChange={this.handleChildNameChange}
           style={{ display: "block" }}
         />

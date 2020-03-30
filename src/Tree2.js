@@ -8,10 +8,8 @@ class CustomTree extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: {
+      treeData: {
         name: "Parent",
-        id: "1",
-        key: "1",
         children: []
       },
       showForm: false,
@@ -75,47 +73,69 @@ class CustomTree extends Component {
     this.setState({ showForm: false, selectedNode: "" });
   };
 
-  appendChild = (name, newName, child) => {
-    let treeData = JSON.parse(JSON.stringify(this.state.data));
+  updateTree = (name, newName, child) => {
+    const { treeData } = this.state;
 
-    let found = false;
-    var appendChildHelper = (curr, target) => {
-      if (curr.name !== target) {
-        if (!curr.children) return;
-        for (let i = 0; i < curr.children.length; i++) {
-          appendChildHelper(curr.children[i], target);
-          if (found) return;
-        }
-      } else {
-        found = true;
+    const root = JSON.parse(JSON.stringify(treeData));
+
+    const stack = [root];
+    while (stack.length) {
+      const curr = stack.pop();
+      if (curr.name === name) {
         if (curr.name !== newName) curr.name = newName;
         if (child.name !== "") curr.children.push(child);
+        break;
       }
-    };
+      for (let i = 0; i < curr.children.length; i++) {
+        stack.push(curr.children[i]);
+      }
+    }
 
-    appendChildHelper(treeData, name);
+    this.setState({ treeData: root });
+  };
 
-    this.setState({ data: treeData });
+  deleteNode = name => {
+    const { treeData } = this.state;
+
+    const root = JSON.parse(JSON.stringify(treeData));
+
+    let stack = [root];
+    while (stack.length) {
+      const curr = stack.pop();
+      for (let i = 0; i < curr.children.length; i++) {
+        const child = curr.children[i];
+        if (child.name === name) {
+          curr.children.splice(i, 1);
+          stack = [];
+          break;
+        }
+        stack.push(curr.children[i]);
+      }
+    }
+
+    this.setState({ treeData: root });
   };
 
   onSave = (name, newName, child) => {
     this.closeForm();
+
+    //only update the tree if name of node changed or added a child
     if (name !== newName || child.name !== "")
-      //only call function if name of node changed or added a child
-      this.appendChild(name, newName, child);
+      this.updateTree(name, newName, child);
   };
 
   render() {
+    const { showForm, treeData, selectedNode, xPos, yPos } = this.state;
+    const { landscape } = this.props;
     return (
       <>
         <div>
-          {" "}
-          {this.state.showForm ? (
+          {showForm ? (
             <div
               style={{
                 position: "absolute",
-                left: this.state.xPos + 10,
-                top: this.state.yPos + 10,
+                left: xPos + 10,
+                top: yPos + 10,
                 zIndex: 1000
               }}
             >
@@ -124,39 +144,21 @@ class CustomTree extends Component {
                   this.onSave(name, newName, child)
                 }
                 onClose={() => this.closeForm()}
-                selectedNode={this.state.selectedNode}
+                selectedNode={selectedNode}
               />
             </div>
           ) : null}
         </div>
         <div id="treeWrapper" style={{ width: "100em", height: "100em" }}>
-          {/*{this.state.showButton ? (
-          <div
-            style={{
-              position: "absolute",
-              left: this.state.xPos + 10,
-              top: this.state.yPos + 10,
-              zIndex: 1000
-            }}
-          >
-            <button>+</button>
-          </div>
-          ) : null}*/}
           <Tree
             onMouseOver={this.onMouseOver}
-            data={this.state.data}
+            data={treeData}
             onClick={this.onNodeClick}
             zoomable={false}
             translate={{ x: 50, y: 250 }}
-            collapsible={true}
+            collapsible={false}
             transitionDuration={0}
-            /*onMouseOver={(nodeKey, event) =>
-            this.setState({ showButton: true, xPos: event.clientX })
-          }
-          onMouseOut={(nodeKey, event) =>
-            this.setState({ showButton: false, yPos: event.clientY })
-          }*/
-            orientation={this.props.landscape ? "horizontal" : "vertical"}
+            orientation={landscape ? "horizontal" : "vertical"}
           />
         </div>
       </>

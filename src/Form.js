@@ -45,12 +45,18 @@ class EditNodeForm extends React.Component {
 
   render() {
     const { name, newName, child } = this.state;
+    const { allNames } = this.props;
     return (
       <form
         onSubmit={event => {
           event.preventDefault();
           if (newName === "") alert("Name cannot have an empty field");
-          this.props.onSave(name, newName, child);
+          if (
+            (name !== newName && allNames.has(newName).toLowerCase()) ||
+            allNames.has(child.name.toLowerCase())
+          )
+            alert("No duplicate names allowed");
+          else this.props.onSave(name, newName, child);
         }}
         ref={node => (this.node = node)}
       >
@@ -59,7 +65,6 @@ class EditNodeForm extends React.Component {
           value={newName}
           placeholder="Name"
           onChange={this.handleNameChange}
-          style={{ display: "block" }}
         />
         <input
           type="text"

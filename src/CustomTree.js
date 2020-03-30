@@ -3,6 +3,7 @@ import Tree from "react-d3-tree";
 import Form from "./Form";
 import { loginRoute, groupRoute, CREDENTIALS } from "./config.js";
 import axios from "axios";
+import lodash from "lodash";
 
 class CustomTree extends Component {
   constructor(props) {
@@ -16,7 +17,8 @@ class CustomTree extends Component {
       showButton: false,
       selectedNode: "",
       xPos: 0,
-      yPos: 0
+      yPos: 0,
+      allNames: new Set(["parent"])
     };
   }
 
@@ -76,14 +78,22 @@ class CustomTree extends Component {
   updateTree = (name, newName, child) => {
     const { treeData } = this.state;
 
-    const root = JSON.parse(JSON.stringify(treeData));
+    const root = lodash.cloneDeep(treeData);
+    const allNames = lodash.cloneDeep(this.state.allNames);
 
     const stack = [root];
     while (stack.length) {
       const curr = stack.pop();
       if (curr.name === name) {
-        if (curr.name !== newName) curr.name = newName;
-        if (child.name !== "") curr.children.push(child);
+        if (curr.name !== newName) {
+          allNames.delete(name);
+          allNames.add(newName.toLowerCase());
+          curr.name = newName;
+        }
+        if (child.name !== "") {
+          allNames.add(child.name.toLowerCase());
+          curr.children.push(child);
+        }
         break;
       }
       for (let i = 0; i < curr.children.length; i++) {
@@ -91,13 +101,14 @@ class CustomTree extends Component {
       }
     }
 
-    this.setState({ treeData: root });
+    this.setState({ treeData: root, allNames });
   };
 
   deleteNode = name => {
     const { treeData } = this.state;
 
-    const root = JSON.parse(JSON.stringify(treeData));
+    const root = lodash.cloneDeep(treeData);
+    const allNames = lodash.cloneDeep(this.state.allNames);
 
     let stack = [root];
     while (stack.length) {
@@ -106,6 +117,7 @@ class CustomTree extends Component {
         const child = curr.children[i];
         if (child.name === name) {
           curr.children.splice(i, 1);
+          allNames.delete(name.toLowerCase());
           stack = [];
           break;
         }
@@ -113,7 +125,7 @@ class CustomTree extends Component {
       }
     }
 
-    this.setState({ treeData: root });
+    this.setState({ treeData: root, allNames });
   };
 
   onSave = (name, newName, child) => {
@@ -125,7 +137,14 @@ class CustomTree extends Component {
   };
 
   render() {
-    const { showForm, treeData, selectedNode, xPos, yPos } = this.state;
+    const {
+      showForm,
+      treeData,
+      selectedNode,
+      allNames,
+      xPos,
+      yPos
+    } = this.state;
     const { landscape } = this.props;
     return (
       <>
@@ -145,6 +164,7 @@ class CustomTree extends Component {
                 }
                 onClose={() => this.closeForm()}
                 selectedNode={selectedNode}
+                allNames={allNames}
               />
             </div>
           ) : null}

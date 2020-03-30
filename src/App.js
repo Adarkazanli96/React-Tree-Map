@@ -1,5 +1,5 @@
 import "./App.css";
-import CustomTree from "./Tree2";
+import CustomTree from "./CustomTree";
 import React, { Component } from "react";
 import Switch from "@material-ui/core/Switch";
 

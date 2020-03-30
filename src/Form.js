@@ -52,7 +52,7 @@ class EditNodeForm extends React.Component {
           event.preventDefault();
           if (newName === "") alert("Name cannot have an empty field");
           if (
-            (name !== newName && allNames.has(newName).toLowerCase()) ||
+            (name !== newName && allNames.has(newName.toLowerCase())) ||
             allNames.has(child.name.toLowerCase())
           )
             alert("No duplicate names allowed");

@@ -4,6 +4,7 @@ import Form from "./Form";
 import { loginRoute, groupRoute, CREDENTIALS } from "./config.js";
 import axios from "axios";
 import lodash from "lodash";
+import NodeLabel from "./NodeLabel";
 
 class CustomTree extends Component {
   constructor(props) {
@@ -11,7 +12,12 @@ class CustomTree extends Component {
     this.state = {
       treeData: {
         name: "Parent",
-        children: []
+        children: [
+          {
+            name: "Child",
+            children: []
+          }
+        ]
       },
       showForm: false,
       showButton: false,
@@ -60,14 +66,18 @@ class CustomTree extends Component {
     }
   }
 
-  onNodeClick = (nodeKey, event) => {
-    event.preventDefault();
-    console.log(nodeKey, event);
+  onEdit = nodeData => {
+    this.unCollapse(nodeData.name);
+
+    const element = document.getElementById(nodeData.id);
+    const x = element.getBoundingClientRect().x;
+    const y = element.getBoundingClientRect().y;
+
     this.setState({
-      selectedNode: nodeKey.name,
+      selectedNode: nodeData.name,
       showForm: true,
-      xPos: event.clientX,
-      yPos: event.clientY
+      xPos: x,
+      yPos: y
     });
   };
 
@@ -128,6 +138,26 @@ class CustomTree extends Component {
     this.setState({ treeData: root, allNames });
   };
 
+  unCollapse = node => {
+    const { treeData } = this.state;
+
+    const root = lodash.cloneDeep(treeData);
+
+    const stack = [root];
+    while (stack.length) {
+      const curr = stack.pop();
+      if (curr.name === node) {
+        curr._collapsed = false;
+        break;
+      }
+      for (let i = 0; i < curr.children.length; i++) {
+        stack.push(curr.children[i]);
+      }
+    }
+
+    this.setState({ treeData: root });
+  };
+
   onSave = (name, newName, child) => {
     this.closeForm();
 
@@ -153,8 +183,8 @@ class CustomTree extends Component {
             <div
               style={{
                 position: "absolute",
-                left: xPos + 10,
-                top: yPos + 10,
+                left: xPos,
+                top: yPos + 40,
                 zIndex: 1000
               }}
             >
@@ -173,12 +203,36 @@ class CustomTree extends Component {
           <Tree
             onMouseOver={this.onMouseOver}
             data={treeData}
-            onClick={this.onNodeClick}
+            //onClick={this.onNodeClick}
             zoomable={false}
             translate={{ x: 50, y: 250 }}
-            collapsible={false}
+            //collapsible={false}
             transitionDuration={0}
             orientation={landscape ? "horizontal" : "vertical"}
+            styles={{
+              links: {},
+              nodes: {
+                node: {}, //{ circle: { stroke: "blue", strokeWidth: 3 } },
+                leafNode: {}
+              }
+            }}
+            allowForeignObjects
+            nodeLabelComponent={{
+              render: (
+                <NodeLabel
+                  onClick={nodeData => {
+                    this.onEdit(nodeData);
+                  }}
+                  className="myLabelComponentInSvg"
+                />
+              ),
+              foreignObjectWrapper: {
+                y: -24,
+                x: 10,
+                height: 20,
+                overflow: "visible"
+              }
+            }}
           />
         </div>
       </>

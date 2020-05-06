@@ -5,16 +5,15 @@ export default class NodeLabel extends React.PureComponent {
   render() {
     const { className, nodeData } = this.props;
     return (
-      <div style={{ textAlign: "left" }} className={className}>
+      <div
+        style={{ textAlign: "left" }}
+        className={className}
+        onClick={() => {
+          this.props.onClick(nodeData);
+        }}
+      >
         {nodeData.name}
-        <img
-          height="10px"
-          style={{ marginLeft: "3px" }}
-          src={editIcon}
-          onClick={() => {
-            this.props.onClick(nodeData);
-          }}
-        />
+        <img height="10px" style={{ marginLeft: "3px" }} src={editIcon} />
       </div>
     );
   }

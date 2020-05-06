@@ -204,7 +204,7 @@ class CustomTree extends Component {
             onMouseOver={this.onMouseOver}
             data={treeData}
             //onClick={this.onNodeClick}
-            zoomable={false}
+            //zoomable={false}
             translate={{ x: 50, y: 250 }}
             //collapsible={false}
             transitionDuration={0}
